@@ -67,7 +67,7 @@ class PieView(QAbstractItemView):
         self.pieSize = self.totalSize - 2*self.margin
         self.validItems = 0
         self.totalValue = 0.0
-        self.origin = QPoint()
+        self.origin = QPoint()  # 坐标
         self.rubberBand = None
 
     def dataChanged(self, topLeft, bottomRight, roles):
@@ -103,7 +103,7 @@ class PieView(QAbstractItemView):
 
         if wx < self.totalSize:
             cx = wx - self.totalSize/2
-            cy = self.totalSize/2 - wy; # positive cy for items above the center
+            cy = self.totalSize/2 - wy # positive cy for items above the center
 
             # Determine the distance from the center point of the pie chart.
             d = (cx**2 + cy**2)**0.5
@@ -491,49 +491,52 @@ class MainWindow(QMainWindow):
         self.resize(870, 550)
 
     def setupModel(self):
+        # QStandardItemModel(int rows, int columns, QObject *parent = nullptr)
         self.model = QStandardItemModel(8, 2, self)
+        # 水平标题
         self.model.setHeaderData(0, Qt.Horizontal, "Label")
         self.model.setHeaderData(1, Qt.Horizontal, "Quantity")
 
     def setupViews(self):
         splitter = QSplitter()
         table = QTableView()
-        self.pieChart = PieView()
-        splitter.addWidget(table)
+        self.pieChart = PieView()  # 饼状图控件
+        splitter.addWidget(table)  # 往splitter里面添加item
         splitter.addWidget(self.pieChart)
-        splitter.setStretchFactor(0, 0)
+        splitter.setStretchFactor(0, 0)  # stretch比例
         splitter.setStretchFactor(1, 1)
 
-        table.setModel(self.model)
+        table.setModel(self.model)  # 数据项model
         self.pieChart.setModel(self.model)
 
         self.selectionModel = QItemSelectionModel(self.model)
         table.setSelectionModel(self.selectionModel)
         self.pieChart.setSelectionModel(self.selectionModel)
-
+        # QT表格的宽度自适应调整 = True
         table.horizontalHeader().setStretchLastSection(True)
 
-        self.setCentralWidget(splitter)
+        self.setCentralWidget(splitter)  # 中心窗口部件 = splitter
 
     def openFile(self, path=None):
         if not path:
             path, _ = QFileDialog.getOpenFileName(self, "Choose a data file",
-                    '', '*.cht')
+                    '', '*.cht;; All(*.*)')
 
         if path:
             f = QFile(path)
-
+            # 只读 | 行尾结束符为文本格式[读：'\n'、写：跟随系统(Win32='\r\n')]
             if f.open(QFile.ReadOnly | QFile.Text):
                 stream = QTextStream(f)
-
-                self.model.removeRows(0, self.model.rowCount(QModelIndex()),
+                # 为什么不要第0行？
+                self.model.removeRows(0, self.model.rowCount(QModelIndex()), 
                         QModelIndex())
 
                 row = 0
-                line = stream.readLine()
+                line = stream.readLine()  # 行尾结束符
                 while line:
+                    # 在 row 前面插入1行
                     self.model.insertRows(row, 1, QModelIndex())
-
+                    # 每一行的第一列写上 line 的内容、同时设置颜色
                     pieces = line.split(',')
                     self.model.setData(self.model.index(row, 0, QModelIndex()),
                                 pieces[0])
@@ -550,7 +553,7 @@ class MainWindow(QMainWindow):
 
     def saveFile(self):
         fileName, _ = QFileDialog.getSaveFileName(self, "Save file as", '',
-                '*.cht')
+                '*.cht;; All(*.*)')
 
         if fileName:
             f = QFile(fileName)

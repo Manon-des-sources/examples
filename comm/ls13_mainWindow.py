@@ -16,6 +16,7 @@ from PyQt5.QtWidgets import qApp
 
 class MainWindow(QMainWindow):
     def __init__(self):
+        # 使用super()方法来调用基类(QMainWindow)的方法
         super().__init__()
         self.initUI()
     def initUI(self):
