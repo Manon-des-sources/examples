@@ -1,4 +1,5 @@
 # 参考：E:\Git\PyQt_Site\QTableWidget\TableWidget.py
+# 选择了一个格子(Cell)之后、可以执行某些动作
 
 import sys
 from PyQt5 import QtWidgets
@@ -24,41 +25,57 @@ class ProtocolEditTable(QTableWidget):
         self.setWindowIcon(QIcon("image/Logo.png"))
         self.resize(920, 240)
         self.setColumnCount(5)
-        self.setRowCount(1)
+        self.setRowCount(2)
         self.setColumnWidth(tColumn.DataType.value, 70)
         self.setColumnWidth(tColumn.DataLen.value, 60)
         self.setColumnWidth(tColumn.Endian.value, 60)
         # 表头
-        self.setHorizontalHeaderLabels(["字段名", "数据", "格式", "字节数", "大小端"])
-        self.setVerticalHeaderLabels(["0", "1"])
+        self.iHorizontalHeaderLabels = ["字段名", "数据", "格式", "字节数", "大小端"]
+        self.iVerticalHeaderLabels = ["0", "1"]
+        self.setHorizontalHeaderLabels(self.iHorizontalHeaderLabels)
+        self.setVerticalHeaderLabels(self.iVerticalHeaderLabels)
         self.tDataCount = 0
-        self.AddRow()
+        self.InitItem(0)
+        self.InitAddButton(1)
 
-    def AddRow(self):
-        rowNum = self.rowCount()
-        self.setRowCount(rowNum + 1)
-        # 初始化这一行
-        self.removeCellWidget(rowNum - 1, 0)
-        self.setItem(rowNum - 1, tColumn.Name.value, QTableWidgetItem("帧头"))
-        self.setItem(rowNum - 1, tColumn.Data.value, QTableWidgetItem("68"))
+    def InitItem(self, iRow):
+        self.setItem(iRow, tColumn.Name.value, QTableWidgetItem("帧头"))
+        self.setItem(iRow, tColumn.Data.value, QTableWidgetItem("68"))
         tDataType = QComboBox()
         tDataType.addItems(["Hex", "Dec", "Float", "Double", "String", "BCD", "Fill"])
-        self.setCellWidget(rowNum - 1, tColumn.DataType.value, tDataType)
+        self.setCellWidget(iRow, tColumn.DataType.value, tDataType)
         tDataLength = QSpinBox()
         tDataLength.setRange(0, 1000)
         tDataLength.setValue(1) #设置最开始显示的数字
         tDataLength.setDisplayIntegerBase(10)#这个是显示数字的进制，默认是十进制。
         tDataLength.setSingleStep(1)
-        self.setCellWidget(rowNum - 1, tColumn.DataLen.value, tDataLength)
+        self.setCellWidget(iRow, tColumn.DataLen.value, tDataLength)
         tDataEndian = QComboBox()
         tDataEndian.addItems(["小端", "大端"])
-        self.setCellWidget(rowNum - 1, tColumn.Endian.value, tDataEndian)
-        # 下一行
+        self.setCellWidget(iRow, tColumn.Endian.value, tDataEndian)
+
+    def InitAddButton(self, iRow):
         tButton_AddRow = QPushButton("+", self)
         tButton_AddRow.clicked.connect(self.AddRow)
-        self.setCellWidget(rowNum, 0, tButton_AddRow)
+        self.setCellWidget(iRow, 0, tButton_AddRow)
+        tDataLength = QSpinBox()
+        tDataLength.setRange(0, 1000)
+        tDataLength.setValue(1) #设置最开始显示的数字
+        tDataLength.setDisplayIntegerBase(10)#这个是显示数字的进制，默认是十进制。
+        tDataLength.setSingleStep(1)
         self.tDataCount += tDataLength.value() # 总的字节数
-        self.setItem(rowNum, 3, QTableWidgetItem(str(self.tDataCount)))
+        self.setItem(iRow, 3, QTableWidgetItem(str(self.tDataCount)))
+
+    def AddRow(self):
+        rowNum = self.rowCount()      
+        self.setRowCount(rowNum + 1)
+        # 初始化这一行
+        self.removeCellWidget(rowNum - 1, 0)
+        self.InitItem(rowNum - 1)
+        # 下一行
+        self.InitAddButton(rowNum)
+        self.iVerticalHeaderLabels.append(str(rowNum))
+        self.setVerticalHeaderItem(rowNum, QTableWidgetItem(self.iVerticalHeaderLabels[rowNum]))
 
     def Other(self):
         # 格式 == String: tDataLength 不可修改、程序自动计算 tDataLength
