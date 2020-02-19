@@ -63,12 +63,16 @@ class ColorListEditor(QComboBox):
     def setColor(self, color):
         self.setCurrentIndex(self.findData(color, Qt.DecorationRole))
 
+    # 添加属性(属性的数据类型: QColor)
     color = pyqtProperty(QColor, getColor, setColor, user=True)
 
+    # 颜色列表
     def populateList(self):
+        # colorNames: Returns a QStringList containing the color names Qt knows about
         for i, colorName in enumerate(QColor.colorNames()):
             color = QColor(colorName)
             self.insertItem(i, colorName)
+            # Qt::DecorationRole: The data to be rendered as a decoration in the form of an icon. (QColor, QIcon or QPixmap)
             self.setItemData(i, color, Qt.DecorationRole)
 
 
@@ -80,16 +84,19 @@ class ColorListItemEditorCreator(QItemEditorCreatorBase):
 class Window(QWidget):
     def __init__(self, parent=None):
         super(Window, self).__init__(parent)
-
+        # The class provides widgets for editing item data in views and delegates
         factory = QItemEditorFactory()
+        # Registers an item editor creator specified by creator for the given userType of data
         factory.registerEditor(QVariant.Color, ColorListItemEditorCreator())
+        # Sets the default item editor factory to the given factory. 
+        # Both new and existing delegates will use the new factory
         QItemEditorFactory.setDefaultFactory(factory)
 
         self.createGUI()
 
     def createGUI(self):
         tableData = [
-            ("Alice", QColor('aliceblue')),
+            ("Alice", QColor('valiceblue')),
             ("Neptun", QColor('aquamarine')),
             ("Ferdinand", QColor('springgreen'))
         ]
@@ -100,19 +107,23 @@ class Window(QWidget):
         table.resize(150, 50)
 
         for i, (name, color) in enumerate(tableData):
-            nameItem = QTableWidgetItem(name)
+            # Constructs a table item with the given text
+            nameItem  = QTableWidgetItem(name)
             colorItem = QTableWidgetItem()
-            colorItem.setData(Qt.DisplayRole, color)
+            colorItem.setData(Qt.DisplayRole, color)  # 显示角色：颜色
             table.setItem(i, 0, nameItem)
             table.setItem(i, 1, colorItem)
-
+        # 根据内容自动调整某列的列宽
         table.resizeColumnToContents(0)
+        # 将最后一列填充满表格
         table.horizontalHeader().setStretchLastSection(True)
 
         layout = QGridLayout()
+        # Adds the given widget to the cell grid at row, column. 
+        # The top-left position is (0, 0) by default.
         layout.addWidget(table, 0, 0)
+        # QWidget.setLayout: Sets the layout manager for this widget to layout.
         self.setLayout(layout)
-
         self.setWindowTitle("Color Editor Factory")
 
 
